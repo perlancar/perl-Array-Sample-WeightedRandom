@@ -49,10 +49,10 @@ sub sample_weighted_random_no_replacement {
 
     $n = @$ary if $n > @$ary;
     my @ary_copy = @$ary;
-    my @indexes  = 0 .. $#ary_copy;
+    my @pos  = 0 .. $#ary_copy;
 
     my $sum_of_weights = 0;
-    for (@$ary) { $sum_of_weights += $_->[1] }
+    for (@ary_copy) { $sum_of_weights += $_->[1] }
 
     my @res;
     for my $i (1..$n) {
@@ -63,14 +63,14 @@ sub sample_weighted_random_no_replacement {
             my $elem = $ary_copy[$j];
             my $y2 = $y + $elem->[1];
             if ($x >= $y && $x < $y2) {
-                my $idx = $j;
-                push @res, $opts->{pos} ? $idx : $ary->[$idx][0];
+                push @res, $opts->{pos} ? $pos[$j] : $elem->[0];
+                $sum_of_weights -= $elem->[1];
+                splice @ary_copy, $j, 1;
+                splice @pos     , $j, 1;
                 last;
             }
+            $y = $y2;
         }
-
-        my $idx = int(rand(@$ary));
-        push @res, $opts->{pos} ? $idx : $ary->[$idx];
     }
     @res;
 }
