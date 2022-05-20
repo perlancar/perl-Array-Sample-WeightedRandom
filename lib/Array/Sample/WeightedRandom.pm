@@ -144,8 +144,10 @@ picked once.
 
 =head1 SEE ALSO
 
-Other sampling methods: L<Array::Sample::SysRand>, L<Array::Sample::Partition>.
+L<Data::Random::Weighted> returns only a single item, uses hash internally so
+you can't have duplicate elements, and only allows integer as weights.
 
-L<Array::Sample::SimpleRandom::Scan>
+Other sampling methods: L<Array::Sample::SysRand>, L<Array::Sample::Partition>,
+L<Array::Sample::SimpleRandom>.
 
 =cut
