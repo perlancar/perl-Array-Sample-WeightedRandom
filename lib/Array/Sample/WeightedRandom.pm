@@ -48,33 +48,62 @@ sub sample_weighted_random_with_replacement {
     @res;
 }
 
-sub sample_weighted_random_no_replacement {
+ sub sample_weighted_random_no_replacement {
     my ($ary, $n, $opts) = @_;
     $opts //= {};
+    $opts->{algo} //= 'copy';
 
     $n = @$ary if $n > @$ary;
-    my @ary_copy = @$ary;
-    my @pos  = 0 .. $#ary_copy;
 
     my $sum_of_weights = 0;
-    for (@ary_copy) { $sum_of_weights += $_->[1] }
+    for (@$ary) { $sum_of_weights += $_->[1] }
 
-    my @res;
-    for my $i (1..$n) {
-        my $x = rand() * $sum_of_weights;
+    my @res; # element: item or pos (if 'pos' option is true)
 
-        my $y = 0;
-        for my $j (0 .. $#ary_copy) {
-            my $elem = $ary_copy[$j];
-            my $y2 = $y + $elem->[1];
-            if ($x >= $y && $x < $y2) {
-                push @res, $opts->{pos} ? $pos[$j] : $elem->[0];
-                $sum_of_weights -= $elem->[1];
-                splice @ary_copy, $j, 1;
-                splice @pos     , $j, 1;
-                last;
+    if ($opts->{algo} eq 'nocopy') {
+        my %picked; # key=index, val=1
+        for my $i (1..$n) {
+            my $x = rand() * $sum_of_weights;
+
+            my $y = 0;
+            for my $j (0 .. $#{$ary}) {
+                my $elem;
+                if ($picked{$j}) {
+                    $elem = [undef, 0];
+                } else {
+                    $elem = $ary->[$j];
+                }
+
+                my $y2 = $y + $elem->[1];
+                if ($x >= $y && $x < $y2) {
+                    push @res, $opts->{pos} ? $j : $elem->[0];
+                    $sum_of_weights -= $elem->[1];
+                    $picked{$j}++;
+                    last;
+                }
+                $y = $y2;
             }
-            $y = $y2;
+        }
+    } else {
+        my @ary_copy = @$ary;
+        my @pos  = 0 .. $#ary_copy;
+
+        for my $i (1..$n) {
+            my $x = rand() * $sum_of_weights;
+
+            my $y = 0;
+            for my $j (0 .. $#ary_copy) {
+                my $elem = $ary_copy[$j];
+                my $y2 = $y + $elem->[1];
+                if ($x >= $y && $x < $y2) {
+                    push @res, $opts->{pos} ? $pos[$j] : $elem->[0];
+                    $sum_of_weights -= $elem->[1];
+                    splice @ary_copy, $j, 1;
+                    splice @pos     , $j, 1;
+                    last;
+                }
+                $y = $y2;
+            }
         }
     }
 
@@ -126,10 +155,14 @@ If set to true, will return positions instead of the elements.
 
 =item * shuffle => bool
 
- By default, a heavier-weighted item will be more likely to be at the front of
+By default, a heavier-weighted item will be more likely to be at the front of
 the resulting sample. If this option is set to true, the function will shuffle
 the random samples before returning it, resulting in random order regardless of
 weight.
+
+=item * algo => str
+
+Default is 'copy'. Another choice is 'nocopy'.
 
 =back
 
