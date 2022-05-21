@@ -40,6 +40,11 @@ sub sample_weighted_random_with_replacement {
         }
     }
 
+    if ($opts->{shuffle}) {
+        require List::Util;
+        @res = List::Util::shuffle(@res);
+    }
+
     @res;
 }
 
@@ -72,6 +77,12 @@ sub sample_weighted_random_no_replacement {
             $y = $y2;
         }
     }
+
+    if ($opts->{shuffle}) {
+        require List::Util;
+        @res = List::Util::shuffle(@res);
+    }
+
     @res;
 }
 
@@ -82,7 +93,8 @@ sub sample_weighted_random_no_replacement {
 
  use Array::Sample::WeightedRandom qw(sample_weighted_random_with_replacement sample_weighted_random_no_replacement);
 
- # "b" will be picked more often because it has a greater weight
+ # "b" will be picked more often because it has a greater weight. it's also more
+ # likely to be picked at the beginning.
  sample_weighted_random_with_replacement([ ["a",1], ["b",2.5] ], 1); => ("b")
  sample_weighted_random_with_replacement([ ["a",1], ["b",2.5] ], 1); => ("a")
  sample_weighted_random_with_replacement([ ["a",1], ["b",2.5] ], 1); => ("b")
@@ -112,6 +124,13 @@ Options:
 
 If set to true, will return positions instead of the elements.
 
+=item * shuffle => bool
+
+ By default, a heavier-weighted item will be more likely to be at the front of
+the resulting sample. If this option is set to true, the function will shuffle
+the random samples before returning it, resulting in random order regardless of
+weight.
+
 =back
 
 The function takes an array reference (C<\@ary>) and number of samples to take
@@ -119,24 +138,20 @@ The function takes an array reference (C<\@ary>) and number of samples to take
 arrayref containing a value followed by weight (a non-negative real number). The
 function will take samples at random position but taking weight into
 consideration. The larger the weight of an element, the greater the possibility
-of the element being chosen. An element can be picked more than once.
+of the element's value being chosen *and* the greater the possibility of the
+element's value being in the front of the samples. An element can be picked more
+than once.
 
 The function will return a list of sample items (values only, without the
 weights).
 
+If you want random order regardless of weight, you can shuffle the resulting
+list e.g. using L<List::Util>'s C<shuffle>; or you can use the C<shuffle> option
+which does the same.
+
 =head2 sample_weighted_random_no_replacement
 
 Syntax: sample_simple_random_no_replacement(\@ary, $n [ , \%opts ]) => list
-
-Options:
-
-=over
-
-=item * pos => bool
-
-If set to true, will return positions instead of the elements.
-
-=back
 
 Like L</sample_weighted_random_with_replacement> but an element can only be
 picked once.
