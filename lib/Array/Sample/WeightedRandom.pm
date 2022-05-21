@@ -162,7 +162,10 @@ weight.
 
 =item * algo => str
 
-Default is 'copy'. Another choice is 'nocopy'.
+Default is 'copy'. Another choice is 'nocopy', which avoids creating a shallow
+(1-level) copy of the input array. The 'nocopy' algorithm is generally a bit
+slower but could save memory usage *if* your array is very very large (e.g. tens
+of millions of elements).
 
 =back
 
