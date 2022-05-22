@@ -33,7 +33,7 @@ sub sample_weighted_random_with_replacement {
             my $y2 = $y + $elem->[1];
             if ($x >= $y && $x < $y2) {
                 my $idx = $j;
-                push @res, $opts->{pos} ? $idx : $ary->[$idx][0];
+                push @res, $opts->{with_weight} ? $ary->[$idx] : $opts->{pos} ? $idx : $ary->[$idx][0];
                 last;
             }
             $y = $y2;
@@ -76,7 +76,7 @@ sub sample_weighted_random_with_replacement {
 
                 my $y2 = $y + $elem->[1];
                 if ($x >= $y && $x < $y2) {
-                    push @res, $opts->{pos} ? $j : $elem->[0];
+                    push @res, $opts->{with_weight} ? $elem : $opts->{pos} ? $j : $elem->[0];
                     $sum_of_weights -= $elem->[1];
                     $picked{$j}++;
                     last;
@@ -96,7 +96,7 @@ sub sample_weighted_random_with_replacement {
                 my $elem = $ary_copy[$j];
                 my $y2 = $y + $elem->[1];
                 if ($x >= $y && $x < $y2) {
-                    push @res, $opts->{pos} ? $pos[$j] : $elem->[0];
+                    push @res, $opts->{with_weight} ? $elem : $opts->{pos} ? $pos[$j] : $elem->[0];
                     $sum_of_weights -= $elem->[1];
                     splice @ary_copy, $j, 1;
                     splice @pos     , $j, 1;
@@ -166,6 +166,11 @@ Default is 'copy'. Another choice is 'nocopy', which avoids creating a shallow
 (1-level) copy of the input array. The 'nocopy' algorithm is generally a bit
 slower but could save memory usage *if* your array is very very large (e.g. tens
 of millions of elements).
+
+=item * with_weight => bool
+
+If set to true, will return the original elements (values with weights) instead
+of just the values.
 
 =back
 
